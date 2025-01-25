@@ -1,0 +1,30 @@
+{
+  "name": "curlai",
+  "version": "4.0.0",
+  "description": "",
+  "main": "./src/index.mjs",
+  "bin": {
+    "curlai": "bin/curlai"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "a6b8",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.735.0",
+    "aws-sdk": "^2.1692.0",
+    "chalk": "^5.4.1",
+    "dynamic-ascii-table": "^1.0.0",
+    "figlet": "^1.8.0",
+    "googleapis": "^144.0.0",
+    "inquirer": "^12.3.0",
+    "luxon": "^3.5.0",
+    "rss-parser": "^3.13.0",
+    "xmlbuilder2": "^3.1.1"
+  }
+}
