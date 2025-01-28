@@ -127,7 +127,7 @@ class Youtube {
                 const url = `${filt}${channelId}`
                 acc.push( [ url, channelName, 'new', ok, '' ] )
                 return acc
-            }, [] )
+            }, [] ) 
 
         const tsv = data
             .map( ( a ) => a.join( "\t" ) )
