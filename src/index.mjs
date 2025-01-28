@@ -119,7 +119,7 @@ const RssMerger = class {
             'messages': [],
             'tsv': null,
             'data': null
-        } 
+        }
 
         const customModules = new CustomModules( { custom } )
         const { validCategories } = await customModules

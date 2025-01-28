@@ -131,7 +131,7 @@ class Youtube {
 
         const tsv = data
             .map( ( a ) => a.join( "\t" ) )
-            .join( "\n" )
+            .join( "\n" ) 
 
         return { tsv, data }
     }

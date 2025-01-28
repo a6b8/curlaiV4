@@ -182,7 +182,7 @@ const Extension = class {
     }
 }
 
-export { Extension }
+export { Extension } 
 ```
 
 ## License

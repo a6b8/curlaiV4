@@ -100,7 +100,7 @@ const CLI = class {
             youtubeCredentials,
             moduleFolderPath,
             moduleCredentials
-        } ) 
+        } )  
 
         const { newChannelsFolder } = this.#state
         const path= `${newChannelsFolder}/new_channels.tsv`
