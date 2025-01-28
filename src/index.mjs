@@ -3,6 +3,7 @@ import { Table } from './task/Table.mjs'
 import { Merger } from './task/Merger.mjs'
 import { Storage } from './task/Storage.mjs'
 import { Print } from './task/Print.mjs'
+import { Generator } from './task/Generator.mjs'
 
 
 const RssMerger = class {
@@ -108,6 +109,39 @@ const RssMerger = class {
             }, [] )
 
         return { opmlContents }
+    }
+
+
+    async getNewYoutubeChannels( { tableCredentials, youtubeCredentials, moduleFolderPath, moduleCredentials, maxResultsTotal=1000 } ) {
+        const { table, custom, youtube } = this.#config
+        const struct = {
+            'status': false,
+            'messages': [],
+            'tsv': null,
+            'data': null
+        }
+
+        const customModules = new CustomModules( { custom } )
+        const { validCategories } = await customModules
+            .init( { moduleFolderPath, moduleCredentials } )
+
+        const tableModule = new Table( { ...tableCredentials, table, validCategories } )
+        await tableModule.init()
+
+        const { Youtube } = await import( './helpers/Youtube.mjs' )
+        const youtubeModule = new Youtube( { ...youtubeCredentials, youtube, table } )
+        await youtubeModule.init()
+
+        const { status: s1, messages: m1, tableRows } = await tableModule.getTableRows()
+        if( !s1 ) { struct.messages.push( ...m1 ); return struct }
+
+        const { validTableRows } = tableModule
+            .sortTableByValidAndInvalidCategories( { tableRows } )
+
+        const { tsv, data } = await youtubeModule
+            .getNewChannelFromLikedVideos( { validTableRows, maxResultsTotal } )
+
+        return { tsv, data }
     }
 
 

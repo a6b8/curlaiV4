@@ -2,16 +2,11 @@ import inquirer from 'inquirer'
 import figlet from 'figlet'
 import chalk from 'chalk'
 
-import { RssMerger } from './index.mjs'
+import fs from 'fs'
 
+import { RssMerger } from './index.mjs'
 import { config } from './data/config.mjs'
 import { Validation } from './task/Validation.mjs'
-
-import { fileURLToPath } from "url"
-import path from "path"
-
-
-import fs from 'fs'
 import { 
     envToObject, 
     modifyPath
@@ -39,23 +34,78 @@ const CLI = class {
         this.#state['envPath'] = await this.#setEnvPath()
         const envContent = fs.readFileSync( this.#state['envPath'], 'utf8' )
         this.#state['command'] = await this.#setCommand()
-        this.#state['storageProvider'] = await this.#setStorageProvider()
-        this.#state['storageCredentials'] = this.#setStorageCredentials( { envContent } )
 
         const { root } = config['custom']['folder']
         const { command } = this.#state
         if( command === 'create_opmls' ) {
+            this.#state['storageProvider'] = await this.#setStorageProvider()
+            this.#state['storageCredentials'] = this.#setStorageCredentials( { envContent } )
             this.#state['opmlOutputFolder'] = await this.#setOpmlOutputFolder()
             await this.#routeCreateOpmls( { root, envContent } )
         } else if( command === 'generate_feeds' ) {
+            this.#state['storageProvider'] = await this.#setStorageProvider()
+            this.#state['storageCredentials'] = this.#setStorageCredentials( { envContent } )
             this.#state['tableProvider'] = await this.#setTableProvider()
             this.#state['tableCredentials']= this.#setTableCredentials( { envContent } )
             await this.#routeGenerateFeeds( { root, envContent } )
+        } else if( command === 'find_new_youtube_channels' ) {
+            this.#state['tableProvider'] = await this.#setTableProvider()
+            this.#state['tableCredentials']= this.#setTableCredentials( { envContent } )
+            this.#state['newChannelsFolder'] = await this.#setNewChannelsFolder()
+            await this.#routeFindNewYoutubeChannels( { root, envContent } )
+
+            // const { result } = this.#rss.getNewYoutubeChannels()
+            // console.log( '>>>', result )
         } else {
             console.log( chalk.red(
                 `Command ${command} is not recognized` 
             ) )
         }
+
+        return true
+    }
+
+
+    async #routeFindNewYoutubeChannels( { root, envContent } ) {
+        const { moduleFolderPath } = envToObject( { 
+            envContent, 
+            'selection': [ [ 'moduleFolderPath', root ] ]
+        } )
+
+        const moduleCredentials = envToObject( { 
+            envContent, 
+            'selection': [ 
+                [ 'youtubeTemplateUrl', 'YOUTUBE_TEMPLATE_URL' ],
+                [ 'htTemplateUrl', 'HT_TEMPLATE_URL' ]
+            ]
+        } )
+
+        const tableCredentials = {
+            'provider': this.#state['tableProvider'],
+            'credentials': this.#state['tableCredentials']
+        }
+
+        const youtubeCredentials = envToObject( { 
+            envContent, 
+            'selection': [ 
+                [ 'clientId',     'YOUTUBE_OAUTH_CLIENT_ID'  ],
+                [ 'clientSecret', 'YOUTUBE_OAUTH_CLIENT_KEY' ],
+                [ 'tokenPath',    'YOUTUBE_OAUTH_KEY_FILE'   ]
+            ]
+        } )
+
+        youtubeCredentials['tokenPath'] = modifyPath( { 'path': youtubeCredentials['tokenPath'] } )
+        const { tsv, data } = await this.#rss.getNewYoutubeChannels( { 
+            tableCredentials, 
+            youtubeCredentials,
+            moduleFolderPath,
+            moduleCredentials
+        } )
+
+        const { newChannelsFolder } = this.#state
+        const path= `${newChannelsFolder}/new_channels.tsv`
+        const filePath = modifyPath( { path } )
+        fs.writeFileSync( filePath, tsv, 'utf-8' )
 
         return true
     }
@@ -129,7 +179,7 @@ const CLI = class {
                 'type': 'list',
                 'name': 'command',
                 'message': 'Select command:',
-                'choices': [ 'generate_feeds', 'create_opmls' ]
+                'choices': [ 'generate_feeds', 'create_opmls', 'find_new_youtube_channels' ],
             }
         ] )
 
@@ -159,6 +209,23 @@ const CLI = class {
         }
 
         return envPath
+    }
+
+
+    async #setNewChannelsFolder() {
+        const { defaultNewChannelsFolder } = this.#config['cli']
+        let { newChannelsFolder } = await inquirer.prompt( [
+            {
+                'type': 'input',
+                'name': 'newChannelsFolder',
+                'message': `Folder for new channels:`,
+                'default': defaultNewChannelsFolder,
+            }
+        ] )
+        newChannelsFolder = modifyPath( { 'path': newChannelsFolder } )
+
+        return newChannelsFolder
+
     }
 
 

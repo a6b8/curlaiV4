@@ -2,6 +2,7 @@ const config = {
     'cli': {
         'defaultEnv': '~/.curlaiV4/cred.env',
         'defaultOpmlFolder': '~/Desktop',
+        'defaultNewChannelsFolder': '~/Desktop',
         'headline': {
             'text': 'Curlai',
             'params': { 
@@ -219,6 +220,21 @@ const config = {
             'finished': "🎉",  // andere emoji wie '✅' oder '👍' sind auch möglich
             'running': '🔧',
         }
+    },
+    'youtube': {
+        'oauthParams': {
+            'access_type': 'offline',
+            'scope': [ 'https://www.googleapis.com/auth/youtube.readonly' ],
+        },
+        'payloads': {
+            'likedVideos': {
+                'part': 'snippet',
+                'playlistId': 'LL',
+                'maxResults': 50,
+                'pageToken': null,
+            }
+        },
+        'filt': 'https://www.youtube.com/feeds/videos.xml?channel_id='
     }
 }
 
